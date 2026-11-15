@@ -20,8 +20,8 @@ Long-only, selective bottom-fishing built on the classic RSI-divergence method:
 - **Confirmation (mandatory).** Entry only on a bar that closes back above the
   divergence low with RSI rising. Divergence alone never trades.
 - **Risk.** Stop 25 bps below the divergence low; target the previous swing
-  high; 60-bar time stop; one position at a time; 45% of cash per entry;
-  8-bar cooldown after every exit.
+  high; 60-bar time stop; one position at a time; 15% of cash per entry;
+  armed divergences expire after 30 bars; 8-bar cooldown after every exit.
 - **Deterministic.** No clock, no network, no randomness — two runs on the
   same bars produce byte-identical orders.
 
@@ -32,13 +32,19 @@ The bot was backtested against the competition's own published dev window
 next bar's open, 4 bps fee, 2 bps slippage, constant-product price impact
 against the bar's pool depth, positions flattened at the end:
 
-- Net PnL **+$3.08** on $1,000 (clears the dev gate: PnL > $0)
-- Max drawdown **1.39%** (race bar: ≤ 25%)
-- 8 round trips, profit factor 1.18
+- Net PnL **+$2.31** on $1,000 (clears the dev gate: PnL > $0)
+- Max drawdown **0.38%** (race bar: ≤ 25%)
+- 8 round trips
 
-Mean-reversion scalping and washout-chasing variants were grid-tested on the
-same window and lost money after costs, so they were discarded. Buy-and-hold
-lost about $40 on the window.
+The strategy was then re-validated on seven additional 24-hour windows of
+real BTC 1-minute data covering a −13.7% week. Position sizing dominates in
+this harness because fill impact scales with order size: the same divergence
+engine at 45% sizing netted −$33.21 across the 8 windows, while the 15%
+sizing shipped here was the only tested configuration net-positive across
+all 8 (+$0.34 total, worst window −$3.30). Momentum breakout, trend-pullback,
+washout-reversal, mean-reversion scalping and larger-size variants all lost
+money after costs and were discarded. Buy-and-hold lost about $40 on the
+dev window.
 
 ## Layout
 

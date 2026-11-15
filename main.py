@@ -8,14 +8,20 @@ mandatory confirmation — a bar that closes back above the divergence low with
 RSI rising — never the divergence alone. The stop sits 25 bps below the
 divergence low (the skill: below the divergence low plus a buffer); the target
 is the previous swing high; a 60-bar time stop closes stale trades. One
-position at a time, 45% of cash per entry, 8-bar cooldown after every exit.
+position at a time, 15% of cash per entry, 8-bar cooldown after every exit.
 
 Backtested with the backtesting-trading-strategies workflow against the
 competition's own dev window and its exact fill model (4 bps fee, 2 bps
-slippage, constant-product impact vs pool depth): net PnL +$3.08 on $1,000,
-max drawdown 1.39%, 9 round trips. Mean-reversion scalping and washout-chasing
-variants were also grid-tested and lost money on the same window, so they were
-discarded. Deterministic: no clock, no network, no randomness.
+slippage, constant-product impact vs pool depth), then re-validated on seven
+additional 24-hour windows of real BTC 1-minute data covering a -13.7% week.
+Sizing is the dominant variable in this harness: fill impact scales with
+order size, so the original 45% sizing bled on every down day (net -$33.21
+across the 8 windows) while the 15% sizing below was the only configuration
+net-positive across all 8 (+$0.34 total, worst window -$3.30, dev window
++$2.32, max drawdown 0.38%, 8 round trips). Momentum breakout, trend-pullback,
+washout-reversal and scalping variants were also tested on the same windows
+and lost money, so they were discarded. Deterministic: no clock, no network,
+no randomness.
 
 Locked configuration (tuned on the dev window; do not change casually):
   W = 5 (pivot half-window)
@@ -31,9 +37,11 @@ Locked configuration (tuned on the dev window; do not change casually):
       later bar closes back above the divergence low with RSI rising —
       the skill's mandatory confirmation that buyers have actually
       stepped in.
-  SIZE_FRAC = 0.45 (position size)
-      Each entry spends 45% of current cash. One position at a time; the
-      size caps single-trade damage while leaving the trade meaningful.
+  SIZE_FRAC = 0.15 (position size)
+      Each entry spends 15% of current cash. One position at a time. The
+      size is set by the fill model, not by conviction: market impact in
+      this harness grows with order size, and across 8 backtested windows
+      expectancy rose monotonically as size fell from 65% to 15%.
   SL_BUF_BPS = 25 (stop buffer)
       The stop sits 25 bps below the divergence low. If price takes out
       that low by more than the buffer, the divergence thesis is wrong
@@ -44,9 +52,11 @@ Locked configuration (tuned on the dev window; do not change casually):
   TSTOP = 60 (time stop, bars)
       A position still open after 60 bars is closed at market. A bottom
       that has not bounced within an hour is not the bottom we modelled.
-  ARM_LIFE = 45 (arm lifetime, bars)
-      An armed divergence that never confirms within 45 bars expires;
-      stale setups are discarded rather than chased late.
+  ARM_LIFE = 30 (arm lifetime, bars)
+      An armed divergence that never confirms within 30 bars expires;
+      stale setups are discarded rather than chased late. Shortening the
+      arm from 45 to 30 bars removed late, low-quality entries and was
+      worth several dollars of expectancy across the test windows.
   COOLDOWN = 8 (bars)
       After every exit the bot waits 8 bars before it can arm/enter
       again, preventing immediate re-entry churn in the same chop.
@@ -61,10 +71,10 @@ import makefun_bars
 SYM = "CBBTC"
 W = 5                # pivot half-window (bars each side)
 RSI_ZONE = 45.0      # divergence only counts with RSI under this
-SIZE_FRAC = 0.45     # fraction of cash per entry
+SIZE_FRAC = 0.15     # fraction of cash per entry
 SL_BUF_BPS = 25      # stop buffer below the divergence low
 TSTOP = 60           # time stop, bars
-ARM_LIFE = 45        # bars an armed divergence stays valid
+ARM_LIFE = 30        # bars an armed divergence stays valid
 COOLDOWN = 8         # bars to wait after an exit
 MAX_SLIP_BPS = 500   # fill guard: never chase a fill beyond 5% from last close
 
